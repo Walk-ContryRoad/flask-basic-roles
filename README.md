@@ -59,7 +59,7 @@ def task_failures(methods=(...)):
 # Everyone including unauthenticated users can view task results.
 @app.route("/task_results")
 def task_results(methods=(...)):
-	return "Welcome to the photography page!"
+	return "Here are the task results!"
 
 if __name__ == "__main__":
     app.run()
