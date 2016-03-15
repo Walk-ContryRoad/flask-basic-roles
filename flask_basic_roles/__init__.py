@@ -9,6 +9,8 @@ from flask import Response
 class BasicRoleAuthError(Exception):
     pass
 
+class UnknownVerbError(Exception):
+    pass
 
 class UserAlreadyDefinedError(BasicRoleAuthError):
     pass
@@ -95,25 +97,48 @@ class BasicRoleAuth(object):
                 'The authenticated user is not authorized for the '
                 'attempted operation.', 401)
 
-    def require(self, users=(), roles=(), test_auth=None):
+    def _process_targets(self, target):
 
-        if isinstance(users, basestring):
-            users = (users,)
-        if isinstance(roles, basestring):
-            roles = (roles,)
-        roles = set(roles)
+        verbs = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
+
+        new_target = defaultdict(set)
+
+        if not isinstance(target, dict):
+            if isinstance(target, basestring):
+                target = (target,)
+            target = set(target)
+            for v in verbs:
+                new_target[v].update(target)
+            return new_target
+        for k, v in target.items():
+            if isinstance(v, basestring):
+                v = (v,)
+            v = set(v)
+            for m in (m.upper() for m in k.split(',')):
+                if m not in verbs:
+                    raise UnknownVerbError(m)
+                new_target[m].update(v)
+        return new_target
+
+    def require(self, users=(), roles=(), test_auth=None, test_method=None):
+
+        users = self._process_targets(users)
+        roles = self._process_targets(roles)
 
         def loaded_decorated(f):
             @wraps(f)
             def decorated(*args, **kwargs):
                 auth = test_auth or request.authorization
+                method = test_method.upper() if test_method else request.method
                 authenticated = auth and (auth.username in self.users) and \
                     self.users[auth.username] == auth.password
                 if not authenticated:
                     return self.no_authentication()
-                if users or roles:
-                    auth_as_user = auth.username in users
-                    auth_as_role = roles & self.roles[auth.username]
+                allowed_users = users[method] if users else None
+                allowed_roles = roles[method] if roles else None
+                if allowed_users or allowed_roles:
+                    auth_as_user = auth.username in allowed_users
+                    auth_as_role = allowed_roles & self.roles[auth.username]
                     if not auth_as_user and not auth_as_role:
                         return self.no_authorization()
                 return f(*args, **kwargs)
