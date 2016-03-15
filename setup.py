@@ -9,7 +9,7 @@ setup(
     description='A plugin for adding very simple users + roles to a flask app',
     author='Dillon Dixon',
     author_email='dillondixon@gmail.com',
-    url='https://github.com/ownaginatious/flask_basic_roles',
+    url='https://github.com/ownaginatious/flask-basic-roles',
     download_url='https://github.com/ownaginatious/flask_basic_roles/tarball/0.1',
     license='MIT',
     keywords=['flask', 'python', 'authentication', 'authorization'],
