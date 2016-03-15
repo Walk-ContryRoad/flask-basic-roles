@@ -5,6 +5,7 @@ from functools import wraps
 from io import open
 from flask import request
 from flask import Response
+import six
 
 
 class BasicRoleAuthError(Exception):
@@ -104,7 +105,7 @@ class BasicRoleAuth(object):
 
         if user not in self.users:
             raise UserNotDefined(user)
-        roles = (roles,) if isinstance(roles, basestring) else roles
+        roles = (roles,) if isinstance(roles, six.string_types) else roles
         for role in roles:
             if ',' in role:
                 raise BadRoleError('\',\' not allowed in role name (%s) '
@@ -122,7 +123,7 @@ class BasicRoleAuth(object):
 
         if user not in self.users:
             raise UserNotDefined(user)
-        roles = (roles,) if isinstance(roles, basestring) else roles
+        roles = (roles,) if isinstance(roles, six.string_types) else roles
         for role in roles:
             self.roles[user].remove(role)
 
@@ -177,14 +178,14 @@ class BasicRoleAuth(object):
         new_target = defaultdict(set)
 
         if not isinstance(target, dict):
-            if isinstance(target, basestring):
+            if isinstance(target, six.string_types):
                 target = (target,)
             target = set(target)
             for v in self.__VERBS:
                 new_target[v].update(target)
             return new_target
         for k, v in target.items():
-            if isinstance(v, basestring):
+            if isinstance(v, six.string_types):
                 v = (v,)
             v = set(v)
             for m in (m.upper() for m in k.split(',')):
