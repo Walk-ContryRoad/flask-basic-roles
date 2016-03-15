@@ -1,4 +1,5 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import absolute_import, division, \
+                       print_function, unicode_literals
 from collections import defaultdict
 from functools import wraps
 from io import open
@@ -9,8 +10,10 @@ from flask import Response
 class BasicRoleAuthError(Exception):
     pass
 
+
 class UnknownVerbError(Exception):
     pass
+
 
 class UserAlreadyDefinedError(BasicRoleAuthError):
     pass
@@ -26,6 +29,8 @@ class BadRoleError(BasicRoleAuthError):
 
 class BasicRoleAuth(object):
 
+    __VERBS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
+
     def __init__(self, user_file=None):
 
         self.users = {}
@@ -35,6 +40,11 @@ class BasicRoleAuth(object):
             self.load_from_file(user_file)
 
     def load_from_file(self, user_file):
+        """
+        Loads users/roles from a file.
+
+        user_file -- file to load the user/roles from
+        """
 
         with open(user_file, 'r+t', encoding='utf8') as f:
             for l in f.readlines():
@@ -44,6 +54,11 @@ class BasicRoleAuth(object):
                 self.add_roles(user, roles)
 
     def save_to_file(self, user_file):
+        """
+        Saves the current set of users/roles to a file.
+
+        user_file -- file to save the user/roles to
+        """
 
         with open(user_file, 'w+t', encoding='utf8') as f:
             for user, password in sorted(self.users.items()):
@@ -51,6 +66,15 @@ class BasicRoleAuth(object):
                 f.write("%s:%s:%s\n" % (user, password, ','.join(roles)))
 
     def add_user(self, user, password, roles=None):
+        """
+        Adds a user to authenticate as.
+
+        user     -- name of the user
+        password -- password of the user
+        roles    -- an optional list of roles to add
+                    to the user
+        """
+
         if user in self.users:
             raise UserAlreadyDefinedError(user)
         self.users[user] = password
@@ -58,12 +82,25 @@ class BasicRoleAuth(object):
             self.add_roles(user, roles)
 
     def delete_user(self, user):
+        """
+        Deletes a user.
+
+        user -- name of the user
+        """
+
         if user in self.users:
             del self.users[user]
         if user in self.roles:
             del self.roles[user]
 
     def add_roles(self, user, roles):
+        """
+        Adds one or more roles to a user. Adding the
+        same role more than once has no effect.
+
+        user  -- name of the user
+        roles -- one or more roles to add
+        """
 
         if user not in self.users:
             raise UserNotDefined(user)
@@ -75,6 +112,13 @@ class BasicRoleAuth(object):
             self.roles[user].add(role)
 
     def delete_roles(self, user, roles):
+        """
+        Deletes one or more roles from a user. Removing the
+        same role more than once has no effect.
+
+        user  -- name of the user
+        roles -- one or more roles to remove
+        """
 
         if user not in self.users:
             raise UserNotDefined(user)
@@ -83,7 +127,10 @@ class BasicRoleAuth(object):
             self.roles[user].remove(role)
 
     def no_authentication(self):
-        """Sends a 401 response that enables basic auth"""
+        """
+        Sends a 401 response that enables basic auth.
+        """
+
         return Response(
                 'User identity could not be verified.\n'
                 'Please login with proper credentials', 401,
@@ -92,14 +139,40 @@ class BasicRoleAuth(object):
                 })
 
     def no_authorization(self):
-        """Sends a 401 response that enables basic auth"""
+        """
+        Sends a 401 response indicating authorization failure.
+        """
+
         return Response(
                 'The authenticated user is not authorized for the '
                 'attempted operation.', 401)
 
     def _process_targets(self, target):
+        """
+        Processes a rules/user listing from
+        the following forms:
 
-        verbs = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
+            1. 'role/user'
+            2. ('role/user_1', 'role/user_2', ..., 'role/user_n')
+            3. {
+                    'verb_1,verb_2,...,verb_n': 'role/user',
+                    'verb_1,verb_2,...,verb_n':
+                        ('role/user_1', ..., 'role/user_n')
+                    ...
+                }
+
+        Into:
+
+            {
+                'GET': set(['role/user_1', ..., 'role/user_n']),
+                'POST': set(['role/user_1', ..., 'role/user_n']),
+                'PUT': set(['role/user_1', ..., 'role/user_n']),
+                'PATCH': set(['role/user_1', ..., 'role/user_n']),
+                'DELETE': set(['role/user_1', ..., 'role/user_n'])
+            }
+
+        target -- rules to process
+        """
 
         new_target = defaultdict(set)
 
@@ -107,7 +180,7 @@ class BasicRoleAuth(object):
             if isinstance(target, basestring):
                 target = (target,)
             target = set(target)
-            for v in verbs:
+            for v in self.__VERBS:
                 new_target[v].update(target)
             return new_target
         for k, v in target.items():
@@ -115,12 +188,21 @@ class BasicRoleAuth(object):
                 v = (v,)
             v = set(v)
             for m in (m.upper() for m in k.split(',')):
-                if m not in verbs:
+                if m not in self.__VERBS:
                     raise UnknownVerbError(m)
                 new_target[m].update(v)
         return new_target
 
     def require(self, users=(), roles=(), test_auth=None, test_method=None):
+        """
+        Authenticates/authorizes a request based on the content of the
+        request.authorization parameter.
+
+        users       -- users permitted to call this method
+        roles       -- roles permitted to call this method
+        test_auth   -- credentials only for testing
+        test_method -- method only for testing
+        """
 
         users = self._process_targets(users)
         roles = self._process_targets(roles)

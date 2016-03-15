@@ -1,5 +1,5 @@
-Flask-Basic-Roles
-=================
+Flask-Basic-Roles |Build Status|
+================================
 
 A Flask library for extending basic web authentication with multiple
 users and roles.
@@ -83,7 +83,8 @@ But isn't putting passwords in code a bad idea?
 
 Yes! This is only supported in the API for demonstration and testing
 purposes. Users and their roles can (and should!) instead be specified
-in a file loaded via ``auth.load_from_file("file path here")``.
+in a file loaded via ``auth.load_from_file("file path here")`` or
+``auth = BasicRoleAuth(user_file="file path here")``.
 
 This file defines each user one line at a time in the following format:
 
@@ -147,3 +148,6 @@ Anything else I should know before using this in my own projects?
    authentication <https://en.wikipedia.org/wiki/Digest_access_authentication>`__.
    You should **not** use passwords you tend to use in a lot of
    different places with this library.
+
+.. |Build Status| image:: https://travis-ci.org/ownaginatious/flask-basic-roles.svg?branch=master
+   :target: https://travis-ci.org/ownaginatious/flask-basic-roles

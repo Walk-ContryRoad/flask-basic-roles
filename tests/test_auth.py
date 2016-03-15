@@ -1,11 +1,14 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import absolute_import, division, \
+                       print_function, unicode_literals
 from collections import namedtuple
 from tempfile import NamedTemporaryFile
 import os
 import unittest
-from flask_basic_roles import BasicRoleAuth, UserAlreadyDefinedError
+from flask_basic_roles import BasicRoleAuth, \
+                              UserAlreadyDefinedError
 
 BasicCred = namedtuple('BasicCred', ['username', 'password'])
+
 
 class TestAuth(unittest.TestCase):
 
@@ -33,8 +36,8 @@ class TestAuth(unittest.TestCase):
 
         # Simulate the decorator on a noop function.
         self.auth.require(users=users, roles=roles,
-            test_auth=BasicCred(username, password),
-            test_method=method)(lambda: True)()
+                          test_auth=BasicCred(username, password),
+                          test_method=method)(lambda: True)()
         a, b = not self.not_authenticated, not self.not_authorized
 
         # Reset authentication/authorization records.
@@ -42,30 +45,30 @@ class TestAuth(unittest.TestCase):
         return a, b
 
     def test_no_authentication_bad_pass(self):
-        self.auth.add_user('dillon', 'foo')
-        authenticated, _ = self.try_auth('dillon', 'bar', 'GET')
+        self.auth.add_user('user_a', 'foo')
+        authenticated, _ = self.try_auth('user_a', 'bar', 'GET')
         self.assertFalse(authenticated)
 
     def test_no_authentication_bad_user(self):
-        self.auth.add_user('dillon', 'foo')
+        self.auth.add_user('user_a', 'foo')
         authenticated, _ = self.try_auth('dollin', 'bar', 'GET')
         self.assertFalse(authenticated)
 
     def test_authentication(self):
-        self.auth.add_user('dillon', 'foo')
-        authenticated, _ = self.try_auth('dillon', 'foo', 'GET')
+        self.auth.add_user('user_a', 'foo')
+        authenticated, _ = self.try_auth('user_a', 'foo', 'GET')
         self.assertTrue(authenticated)
 
     def test_no_authorization(self):
-        self.auth.add_user('dillon', 'foo')
-        _, authorized = self.try_auth('dillon', 'foo', 'GET',
+        self.auth.add_user('user_a', 'foo')
+        _, authorized = self.try_auth('user_a', 'foo', 'GET',
                                       users='billy')
         self.assertFalse(authorized)
 
     def test_authorization_by_user(self):
-        self.auth.add_user('dillon', 'foo')
-        a, b = self.try_auth('dillon', 'foo', 'GET',
-                             users='dillon')
+        self.auth.add_user('user_a', 'foo')
+        a, b = self.try_auth('user_a', 'foo', 'GET',
+                             users='user_a')
         self.assertTrue(a and b)
 
     def test_authorization_by_role(self):
@@ -89,7 +92,6 @@ class TestAuth(unittest.TestCase):
         a, b = self.try_auth('test_2', 'bar', 'GET',
                              roles='system')
         self.assertFalse(b)
-
 
     def test_authorization_by_role_2(self):
 

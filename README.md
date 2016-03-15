@@ -1,4 +1,4 @@
-# Flask-Basic-Roles
+# Flask-Basic-Roles [![Build Status](https://travis-ci.org/ownaginatious/flask-basic-roles.svg?branch=master)](https://travis-ci.org/ownaginatious/flask-basic-roles)
 A Flask library for extending basic web authentication with multiple users and roles.
 
 ## What's `flask-basic-roles` for?
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
 ### But isn't putting passwords in code a bad idea?
 
-Yes! This is only supported in the API for demonstration and testing purposes. Users and their roles can (and should!) instead be specified in a file loaded via `auth.load_from_file("file path here")`.
+Yes! This is only supported in the API for demonstration and testing purposes. Users and their roles can (and should!) instead be specified in a file loaded via `auth.load_from_file("file path here")` or `auth = BasicRoleAuth(user_file="file path here")`.
 
 This file defines each user one line at a time in the following format:
 ```
