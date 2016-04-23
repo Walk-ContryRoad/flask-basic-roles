@@ -6,6 +6,9 @@ from io import open
 from flask import request
 from flask import Response
 import six
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
 
 
 class BasicRoleAuthError(Exception):
