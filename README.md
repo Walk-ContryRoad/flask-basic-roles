@@ -35,31 +35,31 @@ auth.add_user(user='steve', password='12345', roles='admin')
 # Admins can also perform all other verbs.
 @app.route("/task")
 @auth.require(roles={
-	'POST': 'producer',
+    'POST': 'producer',
     'GET': 'consumer',
     'DELETE,POST,PATCH,PUT,GET': 'admin'
 })
 def tasks_endpoint(methods=(...)):
-	return "Here tasks get produced and consumed!"
+    return "Here tasks get produced and consumed!"
 
 # We can secure by user too. Steve can use any verb on this
 # endpoint and everyone else is denied access.
 @app.route("/task_status")
 @auth.require(users='steve')
 def task_status_endpoint(methods=(...)):
-	return "Here are the task statuses!"
+    return "Here are the task statuses!"
 
 # Alice, Bill and users with an 'admin' role can access this, while everyone
 # else is denied on all verbs.
 @app.route("/task_failures")
 @auth.require(users=('alice', 'bill'), roles='admin')
 def task_failures(methods=(...)):
-	return "Here are the task failures!"
+    return "Here are the task failures!"
 
 # Everyone including unauthenticated users can view task results.
 @app.route("/task_results")
 def task_results(methods=(...)):
-	return "Here are the task results!"
+    return "Here are the task results!"
 
 if __name__ == "__main__":
     app.run()
@@ -96,7 +96,7 @@ These methods can be overridden as follows:
 
 ```python
 def no_authentication():
-	return Response("My custom response here", 401)
+    return Response("My custom response here", 401)
 
 auth = BasicRoleAuth()
 auth.no_authentication = no_authentication
