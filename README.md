@@ -102,7 +102,7 @@ auth = BasicRoleAuth()
 auth.no_authentication = no_authentication
 ```
 
-##Anything else I should know before using this in my own projects?
+## Anything else I should know before using this in my own projects?
 
 1. `flask-basic-roles` is intended for small projects ideally **without** user registration (i.e. **not** a forum website or store) and for a small predefined number of users. If you are building something intended for a big audience, don't use this library!
 
